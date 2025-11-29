@@ -6,7 +6,6 @@ import br.one.forum.dtos.UserProfileUpdateRequestDto;
 import br.one.forum.dtos.UserRegisterRequestDto;
 import br.one.forum.entities.User;
 import br.one.forum.repositories.UserRepository;
-import br.one.forum.security.AppUserDetails;
 import br.one.forum.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -18,13 +17,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -82,7 +79,9 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(testUser.getId()))
+                .andExpect(jsonPath("$.profileName").exists())
                 .andExpect(jsonPath("$.profileName").value("Usuário Teste"))
+                .andExpect(jsonPath("$.profilePhoto").exists())
                 .andExpect(jsonPath("$.profilePhoto").value("https://example.com/avatar.jpg"))
                 .andExpect(jsonPath("$.email").doesNotExist()) // Email não deve estar em dados públicos
                 .andExpect(jsonPath("$.createdAt").exists());
@@ -150,7 +149,9 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(testUser.getId()))
+                .andExpect(jsonPath("$.profileName").exists())
                 .andExpect(jsonPath("$.profileName").value("Usuário Teste"))
+                .andExpect(jsonPath("$.profilePhoto").exists())
                 .andExpect(jsonPath("$.email").doesNotExist()) // Email não deve estar em dados públicos
                 .andExpect(jsonPath("$.createdAt").exists());
     }
@@ -429,7 +430,9 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content").exists())
-                .andExpect(jsonPath("$.totalElements").exists());
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.totalElements").exists())
+                .andExpect(jsonPath("$.totalElements").isNumber());
     }
 
     @Test
@@ -442,6 +445,8 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content").exists())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.totalElements").exists())
                 .andExpect(jsonPath("$.totalElements").value(0)); // Sem comentários
     }
 }
